@@ -1,5 +1,5 @@
 package com.techlab.articulo;
-
+/*
 // ============================================================
 // CONSIGNA GENERAL DE LA PREENTREGA
 // ============================================================
@@ -63,6 +63,7 @@ package com.techlab.articulo;
 //
 // Tu tarea será completar cada clase respetando esta estructura.
 //
+ */
 
 // Importamos Scanner para leer datos por consola.
 import java.util.Scanner;
@@ -75,12 +76,14 @@ import com.techlab.articulo.model.ArticuloAlimenticio;
 import com.techlab.articulo.model.ArticuloElectronico;
 import com.techlab.articulo.model.Categoria;
 import com.techlab.articulo.repository.Repositorio;
+import com.techlab.articulo.service.CategoriaService;
 import com.techlab.articulo.utils.Secuencias;
 
 public class App {
 
     public static void main(String[] args) {
 
+        /*
         // ============================================================
         // INSTRUCCIONES PARA ESTA CLASE
         // ============================================================
@@ -106,32 +109,33 @@ public class App {
         // El main solo debe coordinar el flujo principal.
         //
         // ============================================================
-
+         */
 
         Scanner scanner = new Scanner(System.in);
-        // TODO:
         // Crear aquí los repositorios genéricos.
         Repositorio<Categoria> categoriaRepositorio = new Repositorio<Categoria>();
         Repositorio<Articulo> articuloRepositorio = new Repositorio<Articulo>();
+        // Crear aquí los servicios
+        CategoriaService categoriaService = new CategoriaService(categoriaRepositorio, articuloRepositorio);
 
+        cargarDatosIniciales(categoriaRepositorio, articuloRepositorio);
+
+        // Crear aquí los menús y pasarles lo que necesiten por constructor.
+        MenuCategorias menuCategorias = new MenuCategorias(scanner, categoriaService);
+
+        // Implementar el menú principal de la aplicación.
+        menuCategorias.ejecutar();
+        scanner.close();
+    }
+
+    private static void cargarDatosIniciales(Repositorio<Categoria> categoriaRepositorio, Repositorio<Articulo> articuloRepositorio) {
         categoriaRepositorio.agregar(new Categoria(Secuencias.generarCodigoArticulo(),"Tecnología", "Articulos relacionados con tecnología."));
         categoriaRepositorio.agregar(new Categoria(Secuencias.generarCodigoArticulo(),"Alimentos", "Articulos relacionados con Alimentos no perecederos."));
         categoriaRepositorio.agregar(new Categoria(Secuencias.generarCodigoArticulo(),"Bebidas", "Articulos relacionados con bebidas."));
         categoriaRepositorio.agregar(new Categoria(Secuencias.generarCodigoArticulo(),"Frutas y Verduras", "Articulos relacionados con frutas y verduras."));
 
-        articuloRepositorio.agregar(new ArticuloElectronico(Secuencias.generarCodigoArticulo(), "Samsung AS02", 100000,categoriaRepositorio.buscarPorCodigo(1) , 6));
-        articuloRepositorio.agregar(new ArticuloAlimenticio(Secuencias.generarCodigoArticulo(), "Arroz Gallo", 2000,categoriaRepositorio.buscarPorCodigo(2) , 60));
-        articuloRepositorio.agregar(new ArticuloAlimenticio(Secuencias.generarCodigoArticulo(), "Coca Cola Zero", 3000,categoriaRepositorio.buscarPorCodigo(3) , 30));
-
-        // TODO:
-        // Crear aquí los menús y pasarles lo que necesiten por constructor.
-        MenuCategorias menuCategorias = new MenuCategorias(scanner, categoriaRepositorio, articuloRepositorio);
-
-        // TODO:
-        // Implementar el menú principal de la aplicación.
-
-        menuCategorias.ejecutar();
-        scanner.close();
-
+        articuloRepositorio.agregar(new ArticuloElectronico(Secuencias.generarCodigoArticulo(), "Samsung AS02", 100000, categoriaRepositorio.buscarPorCodigo(1) , 6));
+        articuloRepositorio.agregar(new ArticuloAlimenticio(Secuencias.generarCodigoArticulo(), "Arroz Gallo", 2000, categoriaRepositorio.buscarPorCodigo(2) , 60));
+        articuloRepositorio.agregar(new ArticuloAlimenticio(Secuencias.generarCodigoArticulo(), "Coca Cola Zero", 3000, categoriaRepositorio.buscarPorCodigo(3) , 30));
     }
 }
