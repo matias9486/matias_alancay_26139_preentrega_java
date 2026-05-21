@@ -33,6 +33,10 @@ public class ArticuloElectronico extends Articulo {
 
     // TODO:
     // Crear constructor.
+    public ArticuloElectronico() {
+        super();
+    };
+
     public ArticuloElectronico(int codigo, String nombre, double precio, Categoria categoria, int garantiaMeses) {
         super(codigo, nombre, precio, categoria);
         this.garantiaMeses = garantiaMeses;
