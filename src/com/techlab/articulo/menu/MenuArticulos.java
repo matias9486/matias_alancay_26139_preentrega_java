@@ -1,6 +1,8 @@
 package com.techlab.articulo.menu;
 
 import com.techlab.articulo.model.Articulo;
+import com.techlab.articulo.model.ArticuloAlimenticio;
+import com.techlab.articulo.model.ArticuloElectronico;
 import com.techlab.articulo.model.Categoria;
 import com.techlab.articulo.repository.Repositorio;
 import com.techlab.articulo.utils.Validaciones;
@@ -97,14 +99,28 @@ public class MenuArticulos extends Menu {
                     ingresarArticulo();
                     break;
                 default:
-                    System.out.println();
+                    System.out.println("Ingrese una opción válida.");
             }
         }while (opcion != 0);
     }
 
     // TODO:
     // Implementar todos los métodos del CRUD de artículos.
-    private void ingresarArticulo() {}
+    private void ingresarArticulo() {
+        System.out.println("----Ingresar Artículo----");
+        Categoria categoria = pedirCategoriaExistente();
+        if(categoria == null)
+            return;
+
+        String nombre = pedirNombreArticulo(20);
+        double precio = pedirPrecioArticulo();
+        Articulo nuevoArticulo = pedirTipoArticulo();
+        nuevoArticulo.setNombre(nombre);
+        nuevoArticulo.setPrecio(precio);
+        nuevoArticulo.setCategoria(categoria);
+        articuloRepositorio.agregar(nuevoArticulo);
+        System.out.println("Artículo ingresado con éxito.");
+    }
 
     //mét0dos auxiliares para pedir datos
     /*
@@ -185,19 +201,64 @@ public class MenuArticulos extends Menu {
         }
     }
 
-    private String pedirDescripcion(int cantidadCaracteres) {
-        String descripcion;
+    private double pedirPrecioArticulo() {
+        double precio;
         while (true) {
-            descripcion = leerTexto("Ingrese descripcion de la categoria:");
-            if(!Validaciones.validarTextoNoVacio(descripcion)) {
-                System.out.println("Descripción no válida. No puedo estar vacía.");
+            precio = leerDouble("Ingrese precio del artículo:");
+            if(!Validaciones.validarNoNegativo(precio)) {
+                System.out.println("Precio no válida. No puedo ser negativo.");
                 continue;
             }
-            if(!Validaciones.validarLongitudMaxima(descripcion,cantidadCaracteres)) {
-                System.out.println("Descripción no puede exceder los " + cantidadCaracteres + "caracteres.");
+
+            return precio;
+        }
+    }
+
+    private int pedirGarantia() {
+        int garantia;
+        while (true) {
+            garantia = leerEntero("Ingrese garantía en meses:");
+            if(!Validaciones.validarNoNegativo(garantia)) {
+                System.out.println("Garantia no válida. No puedo ser negativa.");
                 continue;
             }
-            return descripcion;
+            return garantia;
+        }
+    }
+
+    private int pedirDiasParaVencimiento() {
+        int dias;
+        while (true) {
+            dias = leerEntero("Ingrese días para vencimiento:");
+            if (!Validaciones.validarNoNegativo(dias)) {
+                System.out.println("Días para vencimiento no válidos. No puedo ser negativo.");
+                continue;
+            }
+            return dias;
+        }
+    }
+
+    //Según el tipo de artículo elegido pide instancia un tipo de artículo y pide su dato específico.
+    private Articulo pedirTipoArticulo() {
+        int opcion;
+        while (true) {
+            opcion = leerEntero("Seleccione tipo de artículo a crear: 1- Electrónico. 2- Alimenticio.");
+
+            switch (opcion) {
+                case 1:
+                    ArticuloElectronico nuevoArticuloElectronio = new ArticuloElectronico();
+                    int mesesGarantia = pedirGarantia();
+                    nuevoArticuloElectronio.setGarantiaMeses(mesesGarantia);
+                    return nuevoArticuloElectronio;
+                case 2:
+                    ArticuloAlimenticio nuevoArticuloAlimenticio = new ArticuloAlimenticio();
+                    int diasVencimiento = pedirDiasParaVencimiento();
+                    nuevoArticuloAlimenticio.setDiasParaVencimiento(diasVencimiento);
+                    return nuevoArticuloAlimenticio;
+                default:
+                    System.out.println("Opción no válida. Ingrese 1 o 2 para tipo de artículo a crear.");
+                    continue;
+            }
         }
     }
 }

@@ -1,10 +1,14 @@
 package com.techlab.articulo.menu;
 
-import com.techlab.articulo.model.Articulo;
+import com.techlab.articulo.excepciones.NoEncontrado;
+import com.techlab.articulo.excepciones.PropiedadInvalida;
+import com.techlab.articulo.excepciones.RelacionExistente;
 import com.techlab.articulo.model.Categoria;
-import com.techlab.articulo.repository.Repositorio;
+import com.techlab.articulo.service.CategoriaService;
 import com.techlab.articulo.utils.Secuencias;
 import com.techlab.articulo.utils.Validaciones;
+
+import java.util.List;
 
 /**
  * CONSIGNA DE ESTA CLASE
@@ -49,13 +53,11 @@ import com.techlab.articulo.utils.Validaciones;
  * - categoriaTieneArticulosAsociados(...)
  */
 public class MenuCategorias extends Menu {
-    private Repositorio<Categoria> categorias;
-    private Repositorio<Articulo> articulos;
+    private CategoriaService categoriaService;
 
-    public MenuCategorias(java.util.Scanner scanner, Repositorio<Categoria> categoriaRepositorio, Repositorio<Articulo> articuloRepositorio) {
+    public MenuCategorias(java.util.Scanner scanner, CategoriaService categoriaService) {
         super(scanner);
-        this.categorias = categoriaRepositorio;
-        this.articulos = articuloRepositorio;
+        this.categoriaService = categoriaService;
     }
 
     @Override
@@ -79,106 +81,116 @@ public class MenuCategorias extends Menu {
             opcion = leerEntero("Ingrese una opción:");
             switch (opcion) {
                 case 1:
-                    ingresarCategoria();
+                    ingresarCategoriaService();
                     break;
                 case 2:
-                    listarCategorias();
+                    listarCategoriasService();
                     break;
                 case 3:
-                    System.out.println("\n____Consultar Categoria:____");
-                    consultarCategoria();
+                    consultarCategoriaService();
                     break;
                 case 4:
-                    modificarCategoria();
+                    modificarCategoriaService();
                     break;
                 case 5:
-                    eliminarCategoria();
+                    eliminarCategoriaService();
                     break;
                 default:
                     System.out.println("Ingrese una opción válida.");
             }
         } while (opcion != 0);
-        System.out.println("Gracias por usar TalentoTech System :v");
     }
 
     // TODO:
     // Implementar todos los métodos del CRUD de categorías.
-    private void ingresarCategoria() {
+    private void ingresarCategoriaService() {
         System.out.println("\n____Ingresar Categoria:____");
-        //codigo, nombre, descripcion
         int codigo = Secuencias.generarCodigoCategoria();
         String nombre = pedirNombre(20);
         String descripcion = pedirDescripcion(30);
 
         Categoria categoria = new Categoria(codigo, nombre, descripcion);
-        categorias.agregar(categoria);
-        System.out.println("Categoría ingresada con éxito.");
-    }
-
-    private void listarCategorias() {
-        if(!categorias.estaVacio()) {
-            System.out.println("\n____Categorias:____");
-            categorias.listar().forEach(System.out::println);
+        try {
+            categoriaService.crearCategoria(categoria);
+            System.out.println("Categoría ingresada con éxito.");
+        }catch (PropiedadInvalida ex) {
+            System.out.println(ex.getMessage());
         }
-        else
-            System.out.println("No hay categorías cargadas.");
+
     }
 
-    private Categoria consultarCategoria() {
-        if (categorias.estaVacio()) {
+    private void listarCategoriasService() {
+        if(categoriaService.listarCategorias() == null || categoriaService.listarCategorias().isEmpty()) {
+            System.out.println("No hay categorías cargadas.");
+            return;
+        }
+        System.out.println("\n____Categorias:____");
+        categoriaService.listarCategorias().forEach(System.out::println);
+    }
+
+    private Categoria consultarCategoriaService() {
+        List<Categoria> categorias = categoriaService.listarCategorias();
+        if(categorias == null || categorias.isEmpty()) {
             System.out.println("No hay categorías cargadas.");
             return null;
         }
-        else {
-            //mostrar categorias
-            System.out.println("\n____Categorias:____");
-            categorias.listar().forEach(System.out::println);
 
-            int codigoCategoria = leerEntero("Ingrese código de categoría:");
-            Categoria categoria = categorias.buscarPorCodigo(codigoCategoria);
-            if (categoria != null) {
-                System.out.println(categoria);
-                return categoria;
-            } else {
-                System.out.println("No se encontró categoria con código: " + codigoCategoria);
-                return null;
+        System.out.println("\n____Categorias:____");
+        categorias.forEach(System.out::println);
+
+        int codigoCategoria = leerEntero("Ingrese código de categoría:");
+        try {
+            Categoria categoria = categoriaService.obtenerPorId(codigoCategoria);
+            System.out.println("Categoria buscada: " + categoria);
+            return categoria;
+        } catch (NoEncontrado ex) {
+            System.out.println(ex.getMessage());
+            return null;
+        }
+    }
+
+    private void modificarCategoriaService() {
+        try {
+            System.out.println("\n____Modificar Categoria:____");
+            Categoria categoriaBuscada = consultarCategoriaService();
+            if(categoriaBuscada == null)
+                return;
+
+            int codigoCategoriaModificar = categoriaBuscada.getCodigo();
+
+            String nombre = categoriaBuscada.getNombre(), descripcion = categoriaBuscada.getDescripcion();
+            if(codigoCategoriaModificar > 0) {
+                if(leerSiNo("Desea modificar el nombre? (S/N)"))
+                    nombre = pedirNombre( 20);
+
+                if (leerSiNo("Desea modificar la descripcion? (S/N)"))
+                    descripcion = pedirDescripcion(30);
+                Categoria categoriaEditar = new Categoria(codigoCategoriaModificar, nombre, descripcion);
+                categoriaService.editarCategoria(codigoCategoriaModificar, categoriaEditar);
+                System.out.println("Categoría modificada.");
             }
+        }catch ( NoEncontrado | PropiedadInvalida ex){
+            System.out.println(ex.getMessage());
         }
     }
 
-    private void modificarCategoria() {
-        System.out.println("\n____Modificar Categoria:____");
-        Categoria categoriaEditar = consultarCategoria();
-        if(categoriaEditar != null) {
-            if(leerSiNo("Desea modificar el nombre? (S/N)"))
-                categoriaEditar.setNombre(pedirNombreModificar(categoriaEditar.getCodigo(), 20));
+    private void eliminarCategoriaService() {
+        try {
+            System.out.println("\n____Eliminar Categoria:____");
+            Categoria categoria = consultarCategoriaService();
 
-            if (leerSiNo("Desea modificar la descripcion? (S/N)"))
-                categoriaEditar.setDescripcion(pedirDescripcion(30));
+            if(categoria == null)
+                return;
 
-            System.out.println("Categoría modificada con éxito.");
+            int codigoCategoria = categoria.getCodigo();
+            categoriaService.eliminarCategoria(codigoCategoria);
+            System.out.println("Categoría eliminada.");
+        } catch (NoEncontrado | RelacionExistente ex) {
+            System.out.println(ex.getMessage());
         }
     }
 
-    private void eliminarCategoria() {
-        System.out.println("\n____Eliminar Categoria:____");
-        Categoria categoria = consultarCategoria();
-        if(categoria != null) {
-            if(categoriaTieneArticulosAsociados(categoria.getCodigo())) {
-                System.out.println("No se puede eliminar categoría. Tiene artículos asociados.");
-            } else {
-                categorias.eliminar(categoria);
-                System.out.println("Categoría eliminada.");
-            }
-        }
-    }
-
-    private boolean categoriaTieneArticulosAsociados(int codigoCategoria) {
-        return articulos.listar().stream().anyMatch(articulo -> articulo.getCategoria().getCodigo() == codigoCategoria);
-    }
-
-            //------Mét0dos Auxiliares para pedir los datos necesarios en el CRUD de Categoria.------
-    //Mét0do utilizado para el alta de categoria. Valida que no exista el nombre
+    //------Mét0dos Auxiliares para pedir los datos necesarios en el CRUD de Categoria.------
     private String pedirNombre(int cantidadCaracteres) {
         String nombre;
         while (true) {
@@ -192,39 +204,7 @@ public class MenuCategorias extends Menu {
                 System.out.println("Nombre no puede exceder los " + cantidadCaracteres + " caracteres.");
                 continue;
             }
-
-            if (categorias.buscarPorNombre(nombre) != null) {
-                System.out.println("Nombre no disponible. Ingrese otro nombre.");
-                continue;
-            }
             return nombre;
-        }
-    }
-
-    //Utilizado para editar categoria. Cambia la forma de validar la disponibilidad del nombre
-    private String pedirNombreModificar(int codigoCategoria, int cantidadCaracteres) {
-        String nombre;
-        while (true) {
-            nombre = leerTexto("Ingrese el nombre de la categoria:");
-            if(!Validaciones.validarTextoNoVacio(nombre)) {
-                System.out.println("Nombre no válido. No puedo estar vacío.");
-                continue;
-            }
-
-            if(!Validaciones.validarLongitudMaxima(nombre,cantidadCaracteres)) {
-                System.out.println("Nombre no puede exceder los " + cantidadCaracteres + "caracteres.");
-                continue;
-            }
-
-            Categoria categoriaBuscada= categorias.buscarPorNombre(nombre);
-            //nombre disponible o ingreso el mismo nombre que tenia
-            if (categoriaBuscada == null || categoriaBuscada.getCodigo() == codigoCategoria)
-                return nombre;
-            //el nuevo nombre ya está en uso
-            if (categoriaBuscada.getCodigo() != codigoCategoria) {
-                System.out.println("Nombre no disponible. Ingrese otro nombre.");
-                continue;
-            }
         }
     }
 
