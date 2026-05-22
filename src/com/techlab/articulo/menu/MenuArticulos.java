@@ -126,6 +126,10 @@ public class MenuArticulos extends Menu {
     // TODO:
     // Implementar todos los métodos del CRUD de artículos.
     private void ingresarArticulo() {
+        if(categorias.listar().isEmpty() || categorias.listar() == null) {
+            System.out.println("Primero debe cargar categorias.");
+            return;
+        }
         try {
             System.out.println("----Ingresar Artículo----");
             Categoria categoria = pedirCategoriaExistente();
