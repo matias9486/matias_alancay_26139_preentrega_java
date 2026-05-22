@@ -71,6 +71,7 @@ import java.util.Scanner;
 // Importamos los menús que luego deberán completarse.
 import com.techlab.articulo.menu.MenuArticulos;
 import com.techlab.articulo.menu.MenuCategorias;
+import com.techlab.articulo.menu.MenuPrincipal;
 import com.techlab.articulo.model.Articulo;
 import com.techlab.articulo.model.ArticuloAlimenticio;
 import com.techlab.articulo.model.ArticuloElectronico;
@@ -124,10 +125,9 @@ public class App {
         // Crear aquí los menús y pasarles lo que necesiten por constructor.
         MenuCategorias menuCategorias = new MenuCategorias(scanner, categoriaService);
         MenuArticulos menuArticulos = new MenuArticulos(scanner, articuloService, categoriaService);
+        MenuPrincipal menu =  new MenuPrincipal(scanner,menuArticulos, menuCategorias);
 
-        // Implementar el menú principal de la aplicación.
-        menuCategorias.ejecutar();
-        //menuArticulos.ejecutar();
+        menu.ejecutar();
         scanner.close();
     }
 
