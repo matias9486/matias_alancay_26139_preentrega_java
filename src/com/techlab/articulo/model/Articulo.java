@@ -49,7 +49,13 @@ public abstract class Articulo implements Calculable, Identificable {
     protected double precio;
     protected Categoria categoria;
 
-    public Articulo() {}
+    public Articulo(){};
+
+    public Articulo(String nombre, double precio, Categoria categoria) {
+        this.nombre = nombre;
+        this.precio = precio;
+        this.categoria = categoria;
+    }
 
     public Articulo(int codigo, String nombre, double precio, Categoria categoria) {
         this.codigo = codigo;
@@ -100,13 +106,12 @@ public abstract class Articulo implements Calculable, Identificable {
     // incluir también tipo y precio final.
     @Override
     public String toString() {
-        return "Articulo{" +
-                "codigo=" + codigo +
-                ", nombre='" + nombre + '\'' +
-                ", precio=" + precio +
-                ", categoria=" + categoria +
-                ", Tipo=" + getTipoArticulo() +
-                ", Precio Final=" + calcularPrecioFinal() +
-                '}';
+        return
+                "Codigo:" + codigo +
+                ". Nombre:'" + nombre +
+                ". Precio: $" + precio +
+                ". Categoria:" + categoria.getNombre() +
+                ". Tipo:" + getTipoArticulo() +
+                ". Precio Final: $" + calcularPrecioFinal();
     }
 }

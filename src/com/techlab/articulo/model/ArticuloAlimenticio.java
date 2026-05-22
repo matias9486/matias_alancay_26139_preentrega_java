@@ -33,6 +33,12 @@ public class ArticuloAlimenticio extends Articulo {
     public ArticuloAlimenticio() {
         super();
     }
+
+    public ArticuloAlimenticio(String nombre, double precio, Categoria categoria, int diasParaVencimiento) {
+        super(nombre, precio, categoria);
+        this.diasParaVencimiento = diasParaVencimiento;
+    }
+
     public ArticuloAlimenticio(int codigo, String nombre, double precio, Categoria categoria, int diasParaVencimiento) {
         super(codigo, nombre, precio, categoria);
         this.diasParaVencimiento = diasParaVencimiento;

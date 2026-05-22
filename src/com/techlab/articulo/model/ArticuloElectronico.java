@@ -37,6 +37,11 @@ public class ArticuloElectronico extends Articulo {
         super();
     };
 
+    public ArticuloElectronico(String nombre, double precio, Categoria categoria, int garantiaMeses) {
+        super(nombre, precio, categoria);
+        this.garantiaMeses = garantiaMeses;
+    }
+
     public ArticuloElectronico(int codigo, String nombre, double precio, Categoria categoria, int garantiaMeses) {
         super(codigo, nombre, precio, categoria);
         this.garantiaMeses = garantiaMeses;

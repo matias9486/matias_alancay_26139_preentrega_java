@@ -1,11 +1,16 @@
 package com.techlab.articulo.menu;
 
+import com.techlab.articulo.excepciones.NoEncontrado;
+import com.techlab.articulo.excepciones.PropiedadInvalida;
 import com.techlab.articulo.model.Articulo;
 import com.techlab.articulo.model.ArticuloAlimenticio;
 import com.techlab.articulo.model.ArticuloElectronico;
 import com.techlab.articulo.model.Categoria;
-import com.techlab.articulo.repository.Repositorio;
+import com.techlab.articulo.service.ArticuloService;
+import com.techlab.articulo.service.CategoriaService;
 import com.techlab.articulo.utils.Validaciones;
+
+import java.util.List;
 
 /**
  * CONSIGNA DE ESTA CLASE
@@ -65,14 +70,13 @@ import com.techlab.articulo.utils.Validaciones;
  * - pedirDiasParaVencimiento()
  */
 public class MenuArticulos extends Menu {
+    private ArticuloService articulos;
+    private CategoriaService categorias;
 
-    private Repositorio<Articulo> articuloRepositorio = new Repositorio<>();
-    private Repositorio<Categoria> categoriaRepositorio = new Repositorio<>();
-
-    public MenuArticulos(java.util.Scanner scanner, Repositorio<Articulo> articuloRepositorio, Repositorio<Categoria> categoriaRepositorio) {
+    public MenuArticulos(java.util.Scanner scanner, ArticuloService articulos, CategoriaService categorias) {
         super(scanner);
-        this.articuloRepositorio = articuloRepositorio;
-        this.categoriaRepositorio = categoriaRepositorio;
+        this.articulos = articulos;
+        this.categorias = categorias;
     }
 
     @Override
@@ -95,8 +99,23 @@ public class MenuArticulos extends Menu {
             mostrarMenu();
             opcion = leerEntero("Ingrese una opción:");
             switch (opcion) {
+                case 0:
+                    System.out.println("Regresando a menu principal...");
+                    break;
                 case 1:
                     ingresarArticulo();
+                    break;
+                case 2:
+                    listarArticulos();
+                    break;
+                case 3:
+                    consultarArticulo();
+                    break;
+                case 4:
+                    modificarArticulo();
+                    break;
+                case 5:
+                    eliminarArticulo();
                     break;
                 default:
                     System.out.println("Ingrese una opción válida.");
@@ -107,53 +126,126 @@ public class MenuArticulos extends Menu {
     // TODO:
     // Implementar todos los métodos del CRUD de artículos.
     private void ingresarArticulo() {
-        System.out.println("----Ingresar Artículo----");
-        Categoria categoria = pedirCategoriaExistente();
-        if(categoria == null)
-            return;
+        try {
+            System.out.println("----Ingresar Artículo----");
+            Categoria categoria = pedirCategoriaExistente();
 
-        String nombre = pedirNombreArticulo(20);
-        double precio = pedirPrecioArticulo();
-        Articulo nuevoArticulo = pedirTipoArticulo();
-        nuevoArticulo.setNombre(nombre);
-        nuevoArticulo.setPrecio(precio);
-        nuevoArticulo.setCategoria(categoria);
-        articuloRepositorio.agregar(nuevoArticulo);
-        System.out.println("Artículo ingresado con éxito.");
+            String nombre = pedirNombre(20);
+            double precio = pedirPrecio();
+
+            Articulo nuevoArticulo = pedirTipoArticulo();
+            //nuevoArticulo.setCodigo(Secuencias.generarCodigoArticulo()); lo agrega el service
+            nuevoArticulo.setNombre(nombre);
+            nuevoArticulo.setPrecio(precio);
+            nuevoArticulo.setCategoria(categoria);
+
+            articulos.agregar(nuevoArticulo);
+            System.out.println("Artículo ingresado con éxito.");
+        }catch (NoEncontrado ex) {
+            System.out.println(ex.getMessage());
+        }
+
     }
 
-    //mét0dos auxiliares para pedir datos
-    /*
-     * - pedirCategoriaExistente()
-     * - pedirNombreArticulo()
-     * - pedirPrecioArticulo()
-     * - pedirGarantia()
-     * - pedirDiasParaVencimiento()
-     */
-    private Categoria pedirCategoriaExistente() {
-        if (categoriaRepositorio.estaVacio()) {
-            System.out.println("No hay categorías cargadas.");
-            return null;
-        }
+    private void listarArticulos(){
+        List<Articulo> listaArticulos = articulos.listar();
+        if(listaArticulos == null || listaArticulos.isEmpty())
+            System.out.println("No hay artículos cargados.");
         else {
-            //mostrar categorias
-            System.out.println("\n____Categorias:____");
-            categoriaRepositorio.listar().forEach(System.out::println);
+            System.out.println("----Articulos----");
+            listaArticulos.forEach(System.out::println);
+        }
+    }
 
-            int codigoCategoria = leerEntero("Ingrese código de categoría:");
-            Categoria categoria = categoriaRepositorio.buscarPorCodigo(codigoCategoria);
-            if (categoria != null) {
-                System.out.println(categoria);
-                return categoria;
-            } else {
-                System.out.println("No se encontró categoria con código: " + codigoCategoria);
-                return null;
+    private Articulo consultarArticulo() {
+        List<Articulo> listaArticulos = articulos.listar();
+        if(listaArticulos == null || listaArticulos.isEmpty())
+            System.out.println("No hay artículos cargados.");
+        else {
+            System.out.println("----Articulos----");
+            listaArticulos.forEach(System.out::println);
+            int codigoArticulo = leerEntero("Ingrese código de artículo:");
+            try {
+                Articulo articulo = articulos.obtenerPorCodigo(codigoArticulo);
+                System.out.println("Artículo buscado: " + articulo);
+                return articulo;
+            }catch (NoEncontrado ex) {
+                System.out.println(ex.getMessage());
+            }
+        }
+        return null;
+    }
+
+    private void modificarArticulo() {
+        Articulo articulo = consultarArticulo();
+        if(articulo == null)
+            return;
+        try {
+            Articulo articuloEditar = null; //simula dto
+            int codigoArticuloEditar = articulo.getCodigo();
+            int garantia, vencimiento;
+            String nombre = articulo.getNombre();
+            double precio = articulo.getPrecio();
+            Categoria categoria = articulo.getCategoria();
+
+            if (leerSiNo("Desea modificar el nombre? (S/N)"))
+                nombre = pedirNombre(20);
+            if (leerSiNo("Desea modificar el precio? (S/N)"))
+                precio = pedirPrecio();
+            if (leerSiNo("Desea modificar la categoría? (S/N)"))
+                categoria = pedirCategoriaExistente();
+
+            //Pedir datos especificos. No permito modificar tipo de articulo
+            if (articulo instanceof ArticuloElectronico electronico) {
+                if (leerSiNo("Desea modificar la garantía? (S/N)"))
+                    garantia = pedirGarantia();
+                else
+                    garantia = ((ArticuloElectronico) articulo).getGarantiaMeses();
+                articuloEditar = new ArticuloElectronico(codigoArticuloEditar, nombre, precio, categoria, garantia);
+            }
+            if (articulo instanceof ArticuloAlimenticio alimenticio) {
+                if (leerSiNo("Desea modificar los días para vencimiento? (S/N)"))
+                    vencimiento = pedirDiasParaVencimiento();
+                else
+                    vencimiento = ((ArticuloAlimenticio) articulo).getDiasParaVencimiento();
+                articuloEditar = new ArticuloAlimenticio(codigoArticuloEditar, nombre, precio, categoria, vencimiento);
+            }
+
+            articulos.editar(codigoArticuloEditar, articuloEditar);
+            System.out.println("Artículo modificado.");
+        } catch (NoEncontrado | PropiedadInvalida ex) {
+            System.out.println(ex.getMessage());
+        }
+    }
+
+    private void eliminarArticulo() {
+        Articulo articulo = consultarArticulo();
+        if (articulo != null) {
+            try {
+                articulos.eliminar(articulo.getCodigo());
+                System.out.println("Artículo eliminado con éxito.");
+            }catch (NoEncontrado ex) {
+                System.out.println(ex.getMessage());
             }
         }
     }
 
+    //mét0dos auxiliares para pedir datos
+    private Categoria pedirCategoriaExistente() throws NoEncontrado {
+        List<Categoria> listaCategoria = categorias.listar();
+        if (listaCategoria == null)
+            throw new NoEncontrado("No hay categorías cargadas.");
+
+        //mostrar categorias
+        System.out.println("\n____Categorias disponibles:____");
+        listaCategoria.forEach(System.out::println);
+
+        int codigoCategoria = leerEntero("Ingrese código de la categoría del producto:");
+        return categorias.obtenerPorCodigo(codigoCategoria);
+    }
+
     //Metodo al crear articulo. Valida por disponibilidad
-    private String pedirNombreArticulo(int cantidadCaracteresMaximo) {
+    private String pedirNombre(int cantidadCaracteresMaximo) {
         String nombre;
         while (true) {
             nombre = leerTexto("Ingrese el nombre del artículo:");
@@ -166,42 +258,11 @@ public class MenuArticulos extends Menu {
                 continue;
             }
 
-            if (articuloRepositorio.buscarPorNombre(nombre) != null) {
-                System.out.println("Nombre no disponible. Ingrese otro nombre.");
-                continue;
-            }
             return nombre;
         }
     }
 
-    //Metodo al modificar articulo. Valida por disponibilidad o si es del mismo articulo
-    private String pedirNombreArticuloModificar(int codigoArticulo, int cantidadCaracteres) {
-        String nombre;
-        while (true) {
-            nombre = leerTexto("Ingrese el nombre del artículo:");
-            if(!Validaciones.validarTextoNoVacio(nombre)) {
-                System.out.println("Nombre no válido. No puedo estar vacío.");
-                continue;
-            }
-
-            if(!Validaciones.validarLongitudMaxima(nombre,cantidadCaracteres)) {
-                System.out.println("Nombre no puede exceder los " + cantidadCaracteres + "caracteres.");
-                continue;
-            }
-
-            Articulo articuloBuscado= articuloRepositorio.buscarPorNombre(nombre);
-            //nombre disponible o ingreso el mismo nombre que tenia
-            if (articuloBuscado == null || articuloBuscado.getCodigo() == codigoArticulo)
-                return nombre;
-            //el nuevo nombre ya está en uso
-            if (articuloBuscado.getCodigo() != codigoArticulo) {
-                System.out.println("Nombre no disponible. Ingrese otro nombre.");
-                continue;
-            }
-        }
-    }
-
-    private double pedirPrecioArticulo() {
+    private double pedirPrecio() {
         double precio;
         while (true) {
             precio = leerDouble("Ingrese precio del artículo:");
@@ -209,7 +270,6 @@ public class MenuArticulos extends Menu {
                 System.out.println("Precio no válida. No puedo ser negativo.");
                 continue;
             }
-
             return precio;
         }
     }
