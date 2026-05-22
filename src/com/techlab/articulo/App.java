@@ -76,8 +76,8 @@ import com.techlab.articulo.model.ArticuloAlimenticio;
 import com.techlab.articulo.model.ArticuloElectronico;
 import com.techlab.articulo.model.Categoria;
 import com.techlab.articulo.repository.Repositorio;
+import com.techlab.articulo.service.ArticuloService;
 import com.techlab.articulo.service.CategoriaService;
-import com.techlab.articulo.utils.Secuencias;
 
 public class App {
 
@@ -117,25 +117,28 @@ public class App {
         Repositorio<Articulo> articuloRepositorio = new Repositorio<Articulo>();
         // Crear aquí los servicios
         CategoriaService categoriaService = new CategoriaService(categoriaRepositorio, articuloRepositorio);
+        ArticuloService articuloService = new ArticuloService(articuloRepositorio, categoriaRepositorio);
 
-        cargarDatosIniciales(categoriaRepositorio, articuloRepositorio);
+        cargarDatosIniciales(categoriaService, articuloService);
 
         // Crear aquí los menús y pasarles lo que necesiten por constructor.
         MenuCategorias menuCategorias = new MenuCategorias(scanner, categoriaService);
+        MenuArticulos menuArticulos = new MenuArticulos(scanner, articuloService, categoriaService);
 
         // Implementar el menú principal de la aplicación.
         menuCategorias.ejecutar();
+        //menuArticulos.ejecutar();
         scanner.close();
     }
 
-    private static void cargarDatosIniciales(Repositorio<Categoria> categoriaRepositorio, Repositorio<Articulo> articuloRepositorio) {
-        categoriaRepositorio.agregar(new Categoria(Secuencias.generarCodigoArticulo(),"Tecnología", "Articulos relacionados con tecnología."));
-        categoriaRepositorio.agregar(new Categoria(Secuencias.generarCodigoArticulo(),"Alimentos", "Articulos relacionados con Alimentos no perecederos."));
-        categoriaRepositorio.agregar(new Categoria(Secuencias.generarCodigoArticulo(),"Bebidas", "Articulos relacionados con bebidas."));
-        categoriaRepositorio.agregar(new Categoria(Secuencias.generarCodigoArticulo(),"Frutas y Verduras", "Articulos relacionados con frutas y verduras."));
+    private static void cargarDatosIniciales(CategoriaService categoriaService, ArticuloService articuloService) {
+        categoriaService.agregar(new Categoria("Tecnología", "Articulos relacionados con tecnología."));
+        categoriaService.agregar(new Categoria("Alimentos", "Articulos relacionados con Alimentos no perecederos."));
+        categoriaService.agregar(new Categoria("Bebidas", "Articulos relacionados con bebidas."));
+        categoriaService.agregar(new Categoria("Frutas y Verduras", "Articulos relacionados con frutas y verduras."));
 
-        articuloRepositorio.agregar(new ArticuloElectronico(Secuencias.generarCodigoArticulo(), "Samsung AS02", 100000, categoriaRepositorio.buscarPorCodigo(1) , 6));
-        articuloRepositorio.agregar(new ArticuloAlimenticio(Secuencias.generarCodigoArticulo(), "Arroz Gallo", 2000, categoriaRepositorio.buscarPorCodigo(2) , 60));
-        articuloRepositorio.agregar(new ArticuloAlimenticio(Secuencias.generarCodigoArticulo(), "Coca Cola Zero", 3000, categoriaRepositorio.buscarPorCodigo(3) , 30));
+        articuloService.agregar(new ArticuloElectronico("Samsung AS02", 100000, categoriaService.obtenerPorCodigo(1), 6));
+        articuloService.agregar(new ArticuloAlimenticio("Arroz Gallo", 2000, categoriaService.obtenerPorCodigo(2) , 60));
+        articuloService.agregar(new ArticuloAlimenticio("Coca Cola Zero", 4000, categoriaService.obtenerPorCodigo(2) , 60));
     }
 }

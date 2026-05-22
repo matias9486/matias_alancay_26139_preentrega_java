@@ -105,13 +105,13 @@ public class MenuCategorias extends Menu {
     // Implementar todos los métodos del CRUD de categorías.
     private void ingresarCategoriaService() {
         System.out.println("\n____Ingresar Categoria:____");
-        int codigo = Secuencias.generarCodigoCategoria();
+        //int codigo = Secuencias.generarCodigoCategoria(); lo genera el service
         String nombre = pedirNombre(20);
         String descripcion = pedirDescripcion(30);
 
-        Categoria categoria = new Categoria(codigo, nombre, descripcion);
+        Categoria categoria = new Categoria(nombre, descripcion);
         try {
-            categoriaService.crearCategoria(categoria);
+            categoriaService.agregar(categoria);
             System.out.println("Categoría ingresada con éxito.");
         }catch (PropiedadInvalida ex) {
             System.out.println(ex.getMessage());
@@ -120,16 +120,17 @@ public class MenuCategorias extends Menu {
     }
 
     private void listarCategoriasService() {
-        if(categoriaService.listarCategorias() == null || categoriaService.listarCategorias().isEmpty()) {
+        List<Categoria> listaCategorias = categoriaService.listar();
+        if(listaCategorias == null || listaCategorias.isEmpty()) {
             System.out.println("No hay categorías cargadas.");
             return;
         }
         System.out.println("\n____Categorias:____");
-        categoriaService.listarCategorias().forEach(System.out::println);
+        listaCategorias.forEach(System.out::println);
     }
 
     private Categoria consultarCategoriaService() {
-        List<Categoria> categorias = categoriaService.listarCategorias();
+        List<Categoria> categorias = categoriaService.listar();
         if(categorias == null || categorias.isEmpty()) {
             System.out.println("No hay categorías cargadas.");
             return null;
@@ -140,7 +141,7 @@ public class MenuCategorias extends Menu {
 
         int codigoCategoria = leerEntero("Ingrese código de categoría:");
         try {
-            Categoria categoria = categoriaService.obtenerPorId(codigoCategoria);
+            Categoria categoria = categoriaService.obtenerPorCodigo(codigoCategoria);
             System.out.println("Categoria buscada: " + categoria);
             return categoria;
         } catch (NoEncontrado ex) {
@@ -166,7 +167,7 @@ public class MenuCategorias extends Menu {
                 if (leerSiNo("Desea modificar la descripcion? (S/N)"))
                     descripcion = pedirDescripcion(30);
                 Categoria categoriaEditar = new Categoria(codigoCategoriaModificar, nombre, descripcion);
-                categoriaService.editarCategoria(codigoCategoriaModificar, categoriaEditar);
+                categoriaService.editar(codigoCategoriaModificar, categoriaEditar);
                 System.out.println("Categoría modificada.");
             }
         }catch ( NoEncontrado | PropiedadInvalida ex){
@@ -183,7 +184,7 @@ public class MenuCategorias extends Menu {
                 return;
 
             int codigoCategoria = categoria.getCodigo();
-            categoriaService.eliminarCategoria(codigoCategoria);
+            categoriaService.eliminar(codigoCategoria);
             System.out.println("Categoría eliminada.");
         } catch (NoEncontrado | RelacionExistente ex) {
             System.out.println(ex.getMessage());

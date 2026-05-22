@@ -33,6 +33,12 @@ public class Categoria implements Identificable {
     private String descripcion;
 
     // Crear constructor.
+    //Para crear sin codigo
+    public Categoria(String nombre, String descripcion) {
+        this.nombre = nombre;
+        this.descripcion = descripcion;
+    }
+    //Para editar
     public Categoria(int codigo, String nombre, String descripcion) {
         this.codigo = codigo;
         this.nombre = nombre;

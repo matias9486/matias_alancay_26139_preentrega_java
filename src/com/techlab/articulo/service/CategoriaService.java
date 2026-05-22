@@ -6,6 +6,7 @@ import com.techlab.articulo.excepciones.RelacionExistente;
 import com.techlab.articulo.model.Articulo;
 import com.techlab.articulo.model.Categoria;
 import com.techlab.articulo.repository.Repositorio;
+import com.techlab.articulo.utils.Secuencias;
 
 import java.util.List;
 
@@ -18,25 +19,25 @@ public class CategoriaService {
         this.articulos = articulos;
     }
 
-    public List<Categoria> listarCategorias() {
+    public List<Categoria> listar() {
         return categorias.listar();
     }
 
-    public Categoria obtenerPorId(int categoriaId) throws NoEncontrado{
-        Categoria categoria = categorias.buscarPorCodigo(categoriaId);
+    public Categoria obtenerPorCodigo(int codigo) throws NoEncontrado{
+        Categoria categoria = categorias.buscarPorCodigo(codigo);
         if (categoria == null)
-            throw new NoEncontrado("No se encontró una categoría con ID: " + categoriaId);
+            throw new NoEncontrado("No se encontró una categoría con Código: " + codigo);
         return categoria;
     }
 
-    public void crearCategoria(Categoria categoria) throws PropiedadInvalida{
+    public void agregar(Categoria categoria) throws PropiedadInvalida{
         if (categorias.buscarPorNombre(categoria.getNombre()) != null) {
             throw new PropiedadInvalida("Ya existe una categoría con ese nombre.");
         }
-        categorias.agregar(categoria);
+        categorias.agregar(new Categoria(Secuencias.generarCodigoCategoria(), categoria.getNombre(), categoria.getDescripcion()));
     }
 
-    public void editarCategoria(int categoriaId, Categoria categoriaEditar) throws NoEncontrado, PropiedadInvalida{
+    public void editar(int categoriaId, Categoria categoriaEditar) throws NoEncontrado, PropiedadInvalida{
         Categoria categoria = categorias.buscarPorCodigo(categoriaId);
         if (categoria == null)
             throw new NoEncontrado("No se encontró una categoría con ID: "+ categoriaId);
@@ -49,7 +50,7 @@ public class CategoriaService {
         categoria.setDescripcion(categoriaEditar.getDescripcion());
     }
 
-    public void eliminarCategoria(int categoriaId) throws NoEncontrado, RelacionExistente{
+    public void eliminar(int categoriaId) throws NoEncontrado, RelacionExistente{
         Categoria categoria = categorias.buscarPorCodigo(categoriaId);
         if (categoria == null)
             throw new NoEncontrado("No se encontró una categoría con ese ID: "+ categoriaId);
