@@ -80,6 +80,9 @@ public class MenuCategorias extends Menu {
             mostrarMenu();
             opcion = leerEntero("Ingrese una opción:");
             switch (opcion) {
+                case 0:
+                    System.out.println("Regresando a menu principal...");
+                    break;
                 case 1:
                     ingresarCategoriaService();
                     break;
